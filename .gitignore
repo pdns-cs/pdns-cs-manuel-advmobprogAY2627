@@ -1,0 +1,16 @@
+# Flutter/Dart generated files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+
+# Android Studio / IntelliJ
+*.iml
+.idea/
+
+# Local screenshots and captures
+*.png
+!android/app/src/main/res/**/*.png
+!ios/Runner/Assets.xcassets/**/*.png
+!macos/Runner/Assets.xcassets/**/*.png
