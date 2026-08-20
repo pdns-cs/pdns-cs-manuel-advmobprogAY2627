@@ -10,6 +10,7 @@ import 'product_detail_screen.dart';
 // services
 import '../services/cart_service.dart';
 import '../services/product_service.dart';
+import '../services/user_service.dart';
 
 // widgets
 import '../widgets/custom_text.dart';
@@ -23,14 +24,28 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  static const int _userId = 5;
+  late Future<Cart?> _cartFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _cartFuture = _loadCart();
+  }
+
+  // Enhancement 3: Reads the signed-in user's id from UserService's saved
+  // data so the cart shown here always matches whoever is logged in.
+  Future<Cart?> _loadCart() async {
+    final userData = await UserService().getUserData();
+    final userId = userData['id'] as int? ?? 0;
+    // Show only products added in this app session, scoped to that userId.
+    return CartService().getCartByUserId(userId);
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: FutureBuilder<Cart?>(
-        // Enhancement 3: Show only products added in this app session.
-        future: CartService().getCartByUserId(_userId),
+        future: _cartFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

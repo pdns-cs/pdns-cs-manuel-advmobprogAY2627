@@ -9,6 +9,7 @@ import 'home_screen.dart';
 
 // services
 import '../services/cart_service.dart';
+import '../services/user_service.dart';
 
 // widgets
 import '../widgets/custom_text.dart';
@@ -162,8 +163,11 @@ class ProductDetailScreen extends StatelessWidget {
 
   Future<void> _addProductToCart(BuildContext context) async {
     try {
+      // Enhancement 3: Add to the signed-in user's cart using the id saved
+      // by UserService, instead of a hardcoded userId.
+      final userData = await UserService().getUserData();
       await CartService().addToCart(
-        userId: 5,
+        userId: userData['id'] as int? ?? 0,
         product: product,
         quantity: 1,
       );

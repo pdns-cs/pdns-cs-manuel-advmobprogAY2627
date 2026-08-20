@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 // screens
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/signin_screen.dart';
+import 'screens/splash_screen.dart';
 
 // providers
 import 'providers/theme_provider.dart';
@@ -27,8 +29,7 @@ class _NoStretchScrollBehavior extends MaterialScrollBehavior {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then
-((
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((
     _,
   ) async {
     await dotenv.load(fileName: 'assets/.env');
@@ -54,11 +55,12 @@ class ManuelAdvMobProg extends StatelessWidget {
             scrollBehavior: _NoStretchScrollBehavior(),
             theme: themeModel.lightTheme,
             darkTheme: themeModel.darkTheme,
-            themeMode: themeModel.isDark ? ThemeMode.dark :
-ThemeMode.light,
-            title: 'E-Commerce App',
-            initialRoute: '/home',
+            themeMode: themeModel.isDark ? ThemeMode.dark : ThemeMode.light,
+            title: 'Bulldogs Exchange',
+            initialRoute: '/splash',
             routes: {
+              '/splash': (context) => const SplashScreen(),
+              '/signin': (context) => const SigninScreen(),
               '/home': (context) => const HomeScreen(),
               '/settings': (context) => const SettingsScreen(),
             },

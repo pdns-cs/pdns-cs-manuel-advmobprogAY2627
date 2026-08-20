@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'cart_screen.dart';
 import 'product_screen.dart';
+import 'profile_screen.dart';
 import '../widgets/custom_text.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -57,7 +58,9 @@ class _HomeScreenState extends State<HomeScreen> {
           children: const <Widget>[
             ProductScreen(),
             CartScreen(),
-            _ProfilePlaceholder(),
+            // Enhancement 3: Profile tab renders the saved User model and
+            // that user's cart, replacing the old placeholder page.
+            ProfileScreen(),
           ],
           onPageChanged: (page) {
             setState(() {
@@ -114,14 +117,5 @@ class _HomeScreenState extends State<HomeScreen> {
       _selectedIndex = value;
     });
     _pageController.jumpToPage(value);
-  }
-}
-
-class _ProfilePlaceholder extends StatelessWidget {
-  const _ProfilePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: CustomText(text: 'Profile coming soon'));
   }
 }
