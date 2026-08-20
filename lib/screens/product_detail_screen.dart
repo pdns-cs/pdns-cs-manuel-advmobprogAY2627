@@ -4,6 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 // models
 import '../models/product.dart';
 
+// screens
+import 'home_screen.dart';
+
+// services
+import '../services/cart_service.dart';
+
 // widgets
 import '../widgets/custom_text.dart';
 
@@ -25,6 +31,20 @@ class ProductDetailScreen extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
       ),
+      // Enhancement 2: Product details also has a floating cart shortcut.
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HomeScreen(initialIndex: 1),
+            ),
+            (route) => false,
+          );
+        },
+        child: const Icon(Icons.shopping_cart),
+      ),
+      floatingActionButtonLocation: const _ProductDetailFabLocation(),
       body: SingleChildScrollView(
         physics: const ClampingScrollPhysics(),
         child: Column(
@@ -66,7 +86,8 @@ class ProductDetailScreen extends StatelessWidget {
                       ),
                       SizedBox(width: 8.w),
                       CustomText(
-                        text: '${product.discountPercentage.toStringAsFixed(0)}% off',
+                        text:
+                            '${product.discountPercentage.toStringAsFixed(0)}% off',
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
                       ),
@@ -90,10 +111,7 @@ class ProductDetailScreen extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                   SizedBox(height: 4.h),
-                  CustomText(
-                    text: product.description,
-                    fontSize: 14.sp,
-                  ),
+                  CustomText(text: product.description, fontSize: 14.sp),
                   SizedBox(height: 16.h),
                   CustomText(
                     text: 'Category',
@@ -101,10 +119,7 @@ class ProductDetailScreen extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                   SizedBox(height: 4.h),
-                  CustomText(
-                    text: product.category,
-                    fontSize: 14.sp,
-                  ),
+                  CustomText(text: product.category, fontSize: 14.sp),
                   SizedBox(height: 16.h),
                   CustomText(
                     text: 'Shipping & Warranty',
@@ -120,6 +135,22 @@ class ProductDetailScreen extends StatelessWidget {
                     text: product.warrantyInformation,
                     fontSize: 14.sp,
                   ),
+                  SizedBox(height: 24.h),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52.h,
+                    child: ElevatedButton.icon(
+                      // Enhancement 3: Sends the selected product id and
+                      // quantity to the Cart add endpoint.
+                      onPressed: () => _addProductToCart(context),
+                      icon: const Icon(Icons.add_shopping_cart),
+                      label: CustomText(
+                        text: 'Add to Cart',
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -127,5 +158,42 @@ class ProductDetailScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _addProductToCart(BuildContext context) async {
+    try {
+      await CartService().addToCart(
+        userId: 5,
+        product: product,
+        quantity: 1,
+      );
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Product added to cart')));
+    } catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $error')));
+    }
+  }
+}
+
+class _ProductDetailFabLocation extends FloatingActionButtonLocation {
+  const _ProductDetailFabLocation();
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    // Enhancement 2: Move the detail cart FAB above the Add to Cart button.
+    final double fabX =
+        scaffoldGeometry.scaffoldSize.width - scaffoldGeometry.floatingActionButtonSize.width - 16;
+    final double fabY =
+        scaffoldGeometry.scaffoldSize.height - scaffoldGeometry.floatingActionButtonSize.height - 112;
+    return Offset(fabX, fabY);
   }
 }

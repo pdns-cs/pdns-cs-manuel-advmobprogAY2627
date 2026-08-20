@@ -1,19 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'cart_screen.dart';
 import 'product_screen.dart';
 import '../widgets/custom_text.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.initialIndex = 0});
+
+  // Enhancement 2: Lets other screens open HomeScreen directly on Cart.
+  final int initialIndex;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
-  final PageController _pageController = PageController();
+  late int _selectedIndex;
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
           elevation: 2,
           title: CustomText(
             text: _selectedIndex == 1
-                ? 'Chat'
+                ? 'Cart'
                 : _selectedIndex == 2
-                    ? 'Profile'
-                    : 'Home',
+                ? 'Profile'
+                : 'Home',
             fontSize: 20.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -45,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
           controller: _pageController,
           children: const <Widget>[
             ProductScreen(),
-            _ChatPlaceholder(),
+            CartScreen(),
             _ProfilePlaceholder(),
           ],
           onPageChanged: (page) {
@@ -54,16 +65,44 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           },
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          onTap: _onTappedBar,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.shop_2), label: 'Shop'),
-            BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          ],
-          currentIndex: _selectedIndex,
+        // Enhancement 2: Cart navigation is shown as a right-side
+        // FloatingActionButton and hidden while the Cart screen is active.
+        floatingActionButton: _selectedIndex == 1
+            ? null
+            : FloatingActionButton(
+                onPressed: () => _onTappedBar(1),
+                child: const Icon(Icons.shopping_cart),
+              ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        bottomNavigationBar: BottomAppBar(
+          child: SizedBox(
+            height: 64.h,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                IconButton(
+                  tooltip: 'Shop',
+                  onPressed: () => _onTappedBar(0),
+                  icon: Icon(
+                    Icons.shop_2,
+                    color: _selectedIndex == 0
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Profile',
+                  onPressed: () => _onTappedBar(2),
+                  icon: Icon(
+                    Icons.person,
+                    color: _selectedIndex == 2
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -75,15 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
       _selectedIndex = value;
     });
     _pageController.jumpToPage(value);
-  }
-}
-
-class _ChatPlaceholder extends StatelessWidget {
-  const _ChatPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: CustomText(text: 'Chat coming soon'));
   }
 }
 
