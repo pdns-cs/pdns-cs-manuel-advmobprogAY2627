@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'cart_screen.dart';
 import 'product_screen.dart';
 import 'profile_screen.dart';
+import '../services/user_service.dart';
 import '../widgets/custom_text.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,12 +20,33 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late int _selectedIndex;
   late final PageController _pageController;
+  String _profileTitle = 'Profile';
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
+    _loadProfileTitle();
+  }
+
+  Future<void> _loadProfileTitle() async {
+    final userData = await UserService().getUserData();
+    if (!mounted) return;
+
+    final firstName = (userData['firstName'] ?? '').toString().trim();
+    final lastName = (userData['lastName'] ?? '').toString().trim();
+    final username = (userData['username'] ?? '').toString().trim();
+
+    final resolvedName = [firstName, lastName].join(' ').trim().isNotEmpty
+        ? [firstName, lastName].join(' ').trim()
+        : username.isNotEmpty
+        ? username
+        : 'Profile';
+
+    setState(() {
+      _profileTitle = resolvedName;
+    });
   }
 
   @override
@@ -39,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
             text: _selectedIndex == 1
                 ? 'Cart'
                 : _selectedIndex == 2
-                ? 'Profile'
+                ? _profileTitle
                 : 'Home',
             fontSize: 20.sp,
             fontWeight: FontWeight.w600,

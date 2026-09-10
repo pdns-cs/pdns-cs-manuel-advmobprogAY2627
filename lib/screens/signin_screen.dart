@@ -50,7 +50,7 @@ class _SigninScreenState extends State<SigninScreen> {
         _isLoading = false;
       });
 
-      Navigator.pushReplacementNamed(context, '/home', arguments: response);
+      Navigator.pushReplacementNamed(context, '/splash', arguments: response);
     } catch (error) {
       if (!mounted) return;
       setState(() {
