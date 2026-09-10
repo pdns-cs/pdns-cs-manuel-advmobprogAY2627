@@ -10,6 +10,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1500));
     await tester.pumpAndSettle();
 
-    expect(find.text('Welcome to Shopora'), findsOneWidget);
+    expect(find.text('Welcome'), findsOneWidget);
+    expect(find.text('Log In'), findsOneWidget);
   });
 }

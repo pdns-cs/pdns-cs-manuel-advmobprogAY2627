@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../services/user_service.dart';
 import '../widgets/custom_text.dart';
 
-// Enhancement 2: Custom sign-in screen UI wired to UserService's
+// Enhancement 1: Custom sign-in screen UI wired to UserService's
 // login/save logic to authenticate and persist the session.
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -38,14 +38,12 @@ class _SigninScreenState extends State<SigninScreen> {
     });
 
     try {
-      // Enhancement 2: Authenticate through UserService, then persist the
-      // returned user data so the splash screen can restore the session.
+      // Enhancement 1: Authenticate through UserService. The service saves
+      // the returned user data so the splash screen can restore the session.
       final response = await userService.loginUser(
         _usernameController.text.trim(),
         _passwordController.text,
       );
-
-      await userService.saveUserData(response);
 
       if (!mounted) return;
       setState(() {
@@ -98,11 +96,15 @@ class _SigninScreenState extends State<SigninScreen> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        CustomText(
-                          text: 'Welcome',
-                          fontSize: 27.sp,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF1D2238),
+                        Expanded(
+                          child: CustomText(
+                            text: 'Welcome',
+                            fontSize: 27.sp,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1D2238),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
@@ -117,17 +119,27 @@ class _SigninScreenState extends State<SigninScreen> {
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(color: Color(0xFFE2E2E8)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E2E8),
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(color: Color(0xFFE2E2E8)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E2E8),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(color: Color(0xFF1F2D6D), width: 1.5),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF1F2D6D),
+                            width: 1.5,
+                          ),
                         ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 16.h,
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -160,17 +172,27 @@ class _SigninScreenState extends State<SigninScreen> {
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(color: Color(0xFFE2E2E8)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E2E8),
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(color: Color(0xFFE2E2E8)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E2E8),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(color: Color(0xFF1F2D6D), width: 1.5),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF1F2D6D),
+                            width: 1.5,
+                          ),
                         ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 16.h,
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -198,7 +220,9 @@ class _SigninScreenState extends State<SigninScreen> {
                                 height: 22,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : CustomText(

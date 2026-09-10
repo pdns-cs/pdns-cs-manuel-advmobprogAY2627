@@ -17,7 +17,7 @@ dependencies:
   flutter_dotenv: ^6.0.1
   flutter_screenutil: ^5.9.3
   http: ^1.6.0
-  shared_preferences: ^2.5.3
+  shared_preferences: ^2.3.2
 
 dev_dependencies:
   flutter_test:
@@ -29,10 +29,8 @@ dev_dependencies:
 flutter:
   assets:
     - assets/
-    - assets/images/
-    # Fix: declared so assets/icons/BE_logo.jpg (splash/sign-in logo) loads —
-    # Flutter only bundles files directly listed or in a declared subfolder.
     - assets/icons/
+    - assets/images/
   fonts:
     - family: Poppins
       fonts:
