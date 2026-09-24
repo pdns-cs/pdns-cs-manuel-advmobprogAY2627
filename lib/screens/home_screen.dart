@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'cart_screen.dart';
+import 'chat_screen.dart';
 import 'product_screen.dart';
 import 'profile_screen.dart';
 import '../services/user_service.dart';
@@ -90,13 +91,17 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           },
         ),
-        // Enhancement 2: Cart navigation is shown as a right-side
-        // FloatingActionButton and hidden while the Cart screen is active.
         floatingActionButton: _selectedIndex == 1
             ? null
             : FloatingActionButton(
-                onPressed: () => _onTappedBar(1),
-                child: const Icon(Icons.shopping_cart),
+                tooltip: 'Chat',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ChatScreen()),
+                  );
+                },
+                child: const Icon(Icons.chat_bubble_outline),
               ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         bottomNavigationBar: BottomAppBar(
@@ -111,6 +116,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(
                     Icons.shop_2,
                     color: _selectedIndex == 0
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Cart',
+                  onPressed: () => _onTappedBar(1),
+                  icon: Icon(
+                    Icons.shopping_cart,
+                    color: _selectedIndex == 1
                         ? Theme.of(context).colorScheme.primary
                         : null,
                   ),

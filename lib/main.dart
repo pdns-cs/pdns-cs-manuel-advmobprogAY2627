@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 // screens
+import 'screens/chat_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/signin_screen.dart';
@@ -62,6 +63,7 @@ class ManuelAdvMobProg extends StatelessWidget {
               '/splash': (context) => const SplashScreen(),
               '/signin': (context) => const SigninScreen(),
               '/home': (context) => const HomeScreen(),
+              '/chat': (context) => const ChatScreen(),
               '/settings': (context) => const SettingsScreen(),
             },
           );
