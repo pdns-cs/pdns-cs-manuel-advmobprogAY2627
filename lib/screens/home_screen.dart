@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'cart_screen.dart';
 import 'product_screen.dart';
+import 'profile_screen.dart';
 import '../widgets/custom_text.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -57,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: const <Widget>[
             ProductScreen(),
             CartScreen(),
-            _ProfilePlaceholder(),
+            ProfileScreen(),
           ],
           onPageChanged: (page) {
             setState(() {
@@ -65,15 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           },
         ),
-        // Enhancement 2: Cart navigation is shown as a right-side
-        // FloatingActionButton and hidden while the Cart screen is active.
-        floatingActionButton: _selectedIndex == 1
-            ? null
-            : FloatingActionButton(
-                onPressed: () => _onTappedBar(1),
-                child: const Icon(Icons.shopping_cart),
-              ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         bottomNavigationBar: BottomAppBar(
           child: SizedBox(
             height: 64.h,
@@ -86,6 +78,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(
                     Icons.shop_2,
                     color: _selectedIndex == 0
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Cart',
+                  onPressed: () => _onTappedBar(1),
+                  icon: Icon(
+                    Icons.shopping_cart,
+                    color: _selectedIndex == 1
                         ? Theme.of(context).colorScheme.primary
                         : null,
                   ),
@@ -114,14 +116,5 @@ class _HomeScreenState extends State<HomeScreen> {
       _selectedIndex = value;
     });
     _pageController.jumpToPage(value);
-  }
-}
-
-class _ProfilePlaceholder extends StatelessWidget {
-  const _ProfilePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: CustomText(text: 'Profile coming soon'));
   }
 }

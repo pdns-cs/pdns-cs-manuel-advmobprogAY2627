@@ -4,9 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 // models
 import '../models/product.dart';
 
-// screens
-import 'home_screen.dart';
-
 // services
 import '../services/cart_service.dart';
 
@@ -31,20 +28,6 @@ class ProductDetailScreen extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
       ),
-      // Enhancement 2: Product details also has a floating cart shortcut.
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const HomeScreen(initialIndex: 1),
-            ),
-            (route) => false,
-          );
-        },
-        child: const Icon(Icons.shopping_cart),
-      ),
-      floatingActionButtonLocation: const _ProductDetailFabLocation(),
       body: SingleChildScrollView(
         physics: const ClampingScrollPhysics(),
         child: Column(
@@ -181,19 +164,5 @@ class ProductDetailScreen extends StatelessWidget {
         context,
       ).showSnackBar(SnackBar(content: Text('Error: $error')));
     }
-  }
-}
-
-class _ProductDetailFabLocation extends FloatingActionButtonLocation {
-  const _ProductDetailFabLocation();
-
-  @override
-  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    // Enhancement 2: Move the detail cart FAB above the Add to Cart button.
-    final double fabX =
-        scaffoldGeometry.scaffoldSize.width - scaffoldGeometry.floatingActionButtonSize.width - 16;
-    final double fabY =
-        scaffoldGeometry.scaffoldSize.height - scaffoldGeometry.floatingActionButtonSize.height - 112;
-    return Offset(fabX, fabY);
   }
 }
