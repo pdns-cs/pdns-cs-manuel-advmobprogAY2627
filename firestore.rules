@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      function isOwner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function hasValidProfile() {
+        let profile = request.resource.data;
+        return profile.keys().hasAll([
+                 'firstName', 'lastName', 'age', 'contactNo', 'username', 'email'
+               ])
+            && profile.keys().hasOnly([
+                 'firstName', 'lastName', 'age', 'contactNo', 'username', 'email'
+               ])
+            && profile.firstName is string
+            && profile.firstName.size() > 0
+            && profile.lastName is string
+            && profile.lastName.size() > 0
+            && profile.age is int
+            && profile.age >= 13
+            && profile.age <= 120
+            && profile.contactNo is string
+            && profile.contactNo.size() >= 7
+            && profile.contactNo.size() <= 20
+            && profile.username is string
+            && profile.username.size() >= 3
+            && profile.username.size() <= 32
+            && profile.email is string
+            && profile.email.size() > 0;
+      }
+
+      allow read, delete: if isOwner();
+      allow create, update: if isOwner() && hasValidProfile();
+    }
+  }
+}

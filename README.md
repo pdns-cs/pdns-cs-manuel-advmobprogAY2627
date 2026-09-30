@@ -42,3 +42,34 @@ This activity extends the existing service-layer pattern with a `User` model: `U
 **Rendering the cart by user id:**
 
 The same `id` persisted at login is used to scope the cart: `ProfileScreen` passes `user.id` into `CartService().getCartByUserId(userId)`, which returns only that user's cart items. `cart_screen.dart` and `product_detail_screen.dart` also read the signed-in user's id from `UserService().getUserData()` before viewing or adding to the cart, so the cart shown always matches whoever is currently logged in, using the saved user id as the shared key across screens.
+
+## Lab Activity 5: discussion
+
+**DummyJSON sign-in workflow:**
+
+1. The user selects **DummyJSON** on `signin_screen.dart` and enters a username and password.
+2. `SigninScreen` calls `UserService.loginUser()`. The service first supports the local test account, then sends the credentials to DummyJSON's `/auth/login` endpoint using an HTTP POST request.
+3. When the response succeeds, `UserService` saves the returned user fields and token in `SharedPreferences`, and records the login type as `dummyjson`.
+4. The splash screen can then call `UserService.isLoggedIn()` to check the saved token and route the user to the home screen. Profile data is reconstructed later by `getUserData()`.
+
+DummyJSON is useful for demonstrating API requests, JSON decoding, token persistence, and the model-service-screen pattern. However, it is a demonstration API: it does not provide the application's own user database or a complete production authentication system.
+
+**Firebase sign-in and sign-up workflow:**
+
+1. The user selects **Firebase** on the sign-in screen and provides an email and password. `SigninScreen` calls `UserService.loginWithFirebase()`.
+2. `UserService` delegates authentication to Firebase Auth through `signInWithEmailAndPassword()`. Firebase validates the credentials and returns a Firebase user with a unique `uid`.
+3. The service uses that `uid` to read the user's profile from the Firestore `users` collection, combines the profile with the Firebase account data, saves the result locally, and records the login type as `firebase`.
+4. During sign-up, `SignupScreen` validates the form and calls `UserService.createFirebaseAccount()`. Firebase Auth creates the account, the service updates the display name, and the additional fields such as name, age, contact number, and username are saved in Firestore under the user's `uid`.
+5. The same local persistence and splash-screen routing used after sign-in lets the rest of the app access the current user's data without passing a large object between screens. Firebase Auth also keeps the native authenticated session available through `currentUser` and `authStateChanges()`.
+
+**Main idea of `UserService`:**
+
+`UserService` is the single gateway for user authentication, account creation, profile storage, session checks, logout, password operations, and account deletion. The screens collect input and display loading or error states, while the service owns the implementation details: HTTP requests for DummyJSON, Firebase Auth calls, Firestore reads and writes, and `SharedPreferences` persistence. This separation keeps authentication logic out of the UI and allows the app to support two authentication providers without duplicating the screen flow.
+
+**Benefits of Firebase in this Flutter application:**
+
+- Firebase Auth provides real email-and-password account creation and sign-in instead of relying on the shared sample users of DummyJSON.
+- Credentials are handled by Firebase rather than stored in the application's own database, while Firebase supplies session management and authentication state changes.
+- Firestore provides a persistent profile store linked to the Auth `uid`, so user-specific data such as the username and contact number can be retrieved consistently across devices.
+- Firebase scales with the application and can later support additional providers, security rules, password reset, email verification, and other production authentication features.
+- The current service-layer design keeps the UI independent from the provider implementation, making it possible to keep DummyJSON for laboratory API demonstrations while using Firebase for real application accounts.

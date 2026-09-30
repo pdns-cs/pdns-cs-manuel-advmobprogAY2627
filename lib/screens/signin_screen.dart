@@ -19,6 +19,7 @@ class _SigninScreenState extends State<SigninScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  String _loginType = 'dummyjson';
 
   @override
   void dispose() {
@@ -40,10 +41,15 @@ class _SigninScreenState extends State<SigninScreen> {
     try {
       // Enhancement 1: Authenticate through UserService. The service saves
       // the returned user data so the splash screen can restore the session.
-      final response = await userService.loginUser(
-        _usernameController.text.trim(),
-        _passwordController.text,
-      );
+      final response = _loginType == 'firebase'
+          ? await userService.loginWithFirebase(
+              email: _usernameController.text.trim(),
+              password: _passwordController.text,
+            )
+          : await userService.loginUser(
+              _usernameController.text.trim(),
+              _passwordController.text,
+            );
 
       if (!mounted) return;
       setState(() {
@@ -109,11 +115,34 @@ class _SigninScreenState extends State<SigninScreen> {
                       ],
                     ),
                     SizedBox(height: 30.h),
+                    SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(
+                          value: 'dummyjson',
+                          label: Text('DummyJSON'),
+                        ),
+                        ButtonSegment(
+                          value: 'firebase',
+                          label: Text('Firebase'),
+                        ),
+                      ],
+                      selected: {_loginType},
+                      onSelectionChanged: (selection) {
+                        setState(() => _loginType = selection.first);
+                        _usernameController.clear();
+                      },
+                    ),
+                    SizedBox(height: 18.h),
                     TextFormField(
                       controller: _usernameController,
                       textInputAction: TextInputAction.next,
+                      keyboardType: _loginType == 'firebase'
+                          ? TextInputType.emailAddress
+                          : TextInputType.text,
                       decoration: InputDecoration(
-                        hintText: 'Username',
+                        hintText: _loginType == 'firebase'
+                            ? 'Email Address'
+                            : 'Username',
                         prefixIcon: const Icon(Icons.person_outline_rounded),
                         filled: true,
                         fillColor: Colors.white,
@@ -143,7 +172,14 @@ class _SigninScreenState extends State<SigninScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Username is required';
+                          return _loginType == 'firebase'
+                              ? 'Email is required'
+                              : 'Username is required';
+                        }
+                        if (_loginType == 'firebase' &&
+                            !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+                                .hasMatch(value.trim())) {
+                          return 'Enter a valid email address';
                         }
                         return null;
                       },
@@ -231,6 +267,16 @@ class _SigninScreenState extends State<SigninScreen> {
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
                               ),
+                      ),
+                    ),
+                    SizedBox(height: 18.h),
+                    TextButton(
+                      onPressed: () => Navigator.pushNamed(context, '/signup'),
+                      child: CustomText(
+                        text: 'Create an account',
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1F2D6D),
                       ),
                     ),
                   ],

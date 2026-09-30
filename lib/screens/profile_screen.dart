@@ -14,7 +14,10 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final UserService _userService = UserService();
   Map<String, dynamic> _userData = {};
+  String _loginType = 'dummyjson';
   bool _isLoading = true;
+
+  bool get _usesFirebase => _loginType == 'firebase';
 
   @override
   void initState() {
@@ -25,9 +28,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadUserData() async {
     try {
       final data = await _userService.getUserData();
+      final loginType = await _userService.getLoginType();
       if (!mounted) return;
       setState(() {
         _userData = data;
+        _loginType = loginType;
         _isLoading = false;
       });
     } catch (_) {
@@ -50,6 +55,176 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String _userEmail() {
     return (_userData['email'] ?? 'No email').toString();
+  }
+
+  Future<void> _updateUsername() async {
+    final controller = TextEditingController(
+      text: (_userData['username'] ?? '').toString(),
+    );
+
+    final username = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Update Username'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: 'New username'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, controller.text),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (username == null || username.trim().isEmpty) {
+      return;
+    }
+
+    try {
+      await _userService.updateUsername(username: username);
+      await _loadUserData();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Username updated successfully')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update username: $error')),
+      );
+    }
+  }
+
+  Future<void> _changePassword() async {
+    if (!_usesFirebase) return;
+
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final email = (_userData['email'] ?? '').toString();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Change Password'),
+          content: SizedBox(
+            width: 400,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: currentPasswordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Current password',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: newPasswordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'New password',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Update'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != true) {
+      return;
+    }
+
+    try {
+      await _userService.resetPasswordFromCurrentPassword(
+        currentPassword: currentPasswordController.text,
+        newPassword: newPasswordController.text,
+        email: email,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password updated successfully')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update password: $error')),
+      );
+    }
+  }
+
+  Future<void> _deleteAccount() async {
+    if (!_usesFirebase) return;
+
+    final email = (_userData['email'] ?? '').toString();
+    final passwordController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Account'),
+          content: TextField(
+            controller: passwordController,
+            obscureText: true,
+            decoration: const InputDecoration(
+              labelText: 'Enter password to confirm',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    try {
+      await _userService.deleteAccount(
+        email: email,
+        password: passwordController.text,
+      );
+      await _userService.logout();
+      if (!mounted) return;
+      Navigator.pushNamedAndRemoveUntil(context, '/signin', (route) => false);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Delete account failed: $error')),
+      );
+    }
   }
 
   @override
@@ -124,53 +299,128 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 _divider(),
                 _infoRow(
-                  icon: Icons.person_outline_rounded,
-                  iconColor: const Color(0xFFE5A64D),
-                  label: 'Gender',
-                  value: (_userData['gender'] ?? 'female').toString(),
-                ),
-                _divider(),
-                _infoRow(
-                  icon: Icons.badge_outlined,
+                  icon: Icons.verified_user_outlined,
                   iconColor: const Color(0xFF43B3AE),
-                  label: 'User ID',
-                  value: '#${(_userData['id'] ?? 1).toString()}',
+                  label: 'Login Type',
+                  value: _usesFirebase ? 'Firebase' : 'DummyJSON',
                 ),
+                if (_usesFirebase) ...[
+                  _divider(),
+                  _infoRow(
+                    icon: Icons.cake_outlined,
+                    iconColor: const Color(0xFFE5A64D),
+                    label: 'Age',
+                    value: (_userData['age'] ?? 'Not provided').toString(),
+                  ),
+                  _divider(),
+                  _infoRow(
+                    icon: Icons.phone_outlined,
+                    iconColor: const Color(0xFF43B3AE),
+                    label: 'Contact Number',
+                    value: (_userData['contactNo'] ?? 'Not provided').toString(),
+                  ),
+                  _divider(),
+                  _infoRow(
+                    icon: Icons.badge_outlined,
+                    iconColor: const Color(0xFF5B7AE5),
+                    label: 'Firebase UID',
+                    value: (_userData['uid'] ?? '').toString(),
+                  ),
+                ] else ...[
+                  _divider(),
+                  _infoRow(
+                    icon: Icons.person_outline_rounded,
+                    iconColor: const Color(0xFFE5A64D),
+                    label: 'Gender',
+                    value: (_userData['gender'] ?? 'Not provided').toString(),
+                  ),
+                  _divider(),
+                  _infoRow(
+                    icon: Icons.badge_outlined,
+                    iconColor: const Color(0xFF43B3AE),
+                    label: 'User ID',
+                    value: '#${(_userData['id'] ?? 0).toString()}',
+                  ),
+                  if ((_userData['age'] ?? 0) != 0) ...[
+                    _divider(),
+                    _infoRow(
+                      icon: Icons.cake_outlined,
+                      iconColor: const Color(0xFFE5A64D),
+                      label: 'Age',
+                      value: _userData['age'].toString(),
+                    ),
+                  ],
+                  if ((_userData['contactNo'] ?? '').toString().isNotEmpty) ...[
+                    _divider(),
+                    _infoRow(
+                      icon: Icons.phone_outlined,
+                      iconColor: const Color(0xFF43B3AE),
+                      label: 'Contact Number',
+                      value: _userData['contactNo'].toString(),
+                    ),
+                  ],
+                ],
               ],
             ),
           ),
           SizedBox(height: 22.h),
-          SizedBox(
-            width: double.infinity,
-            height: 58.h,
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                await _userService.logout();
-                if (!mounted) return;
-                if (!context.mounted) return;
-
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/signin',
-                  (route) => false,
-                );
-              },
-              icon: Icon(Icons.logout_rounded, size: 24.sp, color: Colors.white),
-              label: CustomText(
-                text: 'Log Out',
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+          Column(
+            children: [
+              _actionButton(
+                label: 'Update Username',
+                icon: Icons.edit_note_rounded,
+                color: const Color(0xFF4F7DF9),
+                onPressed: _updateUsername,
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF6B56),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18.r),
+              if (_usesFirebase) ...[
+                SizedBox(height: 12.h),
+                _actionButton(
+                  label: 'Change Password',
+                  icon: Icons.lock_reset_rounded,
+                  color: const Color(0xFF2AA7A0),
+                  onPressed: _changePassword,
+                ),
+                SizedBox(height: 12.h),
+                _actionButton(
+                  label: 'Delete Account',
+                  icon: Icons.delete_forever_rounded,
+                  color: const Color(0xFFDC4B4B),
+                  onPressed: _deleteAccount,
+                ),
+              ],
+              SizedBox(height: 12.h),
+              SizedBox(
+                width: double.infinity,
+                height: 58.h,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    await _userService.logout();
+                    if (!mounted) return;
+                    if (!context.mounted) return;
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/signin',
+                      (route) => false,
+                    );
+                  },
+                  icon: Icon(Icons.logout_rounded, size: 24.sp, color: Colors.white),
+                  label: CustomText(
+                    text: 'Log Out',
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFEF6B56),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.r),
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),
@@ -210,6 +460,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _actionButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required Future<void> Function() onPressed,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 52.h,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 20.sp, color: Colors.white),
+        label: CustomText(
+          text: label,
+          fontSize: 16.sp,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+        ),
       ),
     );
   }

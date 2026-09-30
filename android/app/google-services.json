@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "911006426752",
+    "project_id": "advmobprog-11c7c",
+    "storage_bucket": "advmobprog-11c7c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:911006426752:android:bbee6e44dc8e5540cb2865",
+        "android_client_info": {
+          "package_name": "com.example.manuel_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3645N59Jvne4nWcXqwtQcJViSNeZX6KA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

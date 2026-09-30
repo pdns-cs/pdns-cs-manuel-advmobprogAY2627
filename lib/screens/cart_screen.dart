@@ -37,8 +37,9 @@ class _CartScreenState extends State<CartScreen> {
   Future<Cart?> _loadCart() async {
     final userData = await UserService().getUserData();
     final userId = userData['id'] as int? ?? 0;
-    // Show only products added in this app session, scoped to that userId.
-    return CartService().getCartByUserId(userId);
+    // Firebase users do not have a DummyJSON cart id, so keep the original
+    // seeded cart as the default in that case.
+    return CartService().getSeededCartByUserId(userId == 0 ? 5 : userId);
   }
 
   @override
