@@ -43,7 +43,6 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F3F5),
       body: SafeArea(
         child: Center(
           child: Column(
@@ -53,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 width: 96.w,
                 height: 96.w,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(24.r),
                   boxShadow: [
                     BoxShadow(
@@ -77,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 fontSize: 28.sp,
                 fontWeight: FontWeight.w800,
                 textAlign: TextAlign.center,
-                color: const Color(0xFF1F2D6D),
+                color: Theme.of(context).colorScheme.primary,
               ),
               SizedBox(height: 8.h),
               CustomText(
@@ -85,15 +84,17 @@ class _SplashScreenState extends State<SplashScreen> {
                 fontSize: 13.sp,
                 fontWeight: FontWeight.w500,
                 textAlign: TextAlign.center,
-                color: const Color(0xFF7A7F9A),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               SizedBox(height: 28.h),
-              const SizedBox(
+              SizedBox(
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.4,
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1F2D6D)),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
             ],

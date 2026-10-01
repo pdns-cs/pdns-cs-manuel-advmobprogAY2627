@@ -1,36 +1,228 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class ChatScreen extends StatelessWidget {
+import '../services/chat_service.dart';
+import '../services/user_service.dart';
+import '../widgets/custom_text.dart';
+import 'chatdetail_screen.dart';
+
+class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
+
+  @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  final TextEditingController _searchChatController = TextEditingController();
+  final ChatService _chatService = ChatService();
+  final Map<String, Stream<int>> _unreadCountStreams = {};
+  String? _currentUserEmail;
+  String _searchText = '';
+
+  Stream<int> _unreadCountStream(String userId) {
+    return _unreadCountStreams.putIfAbsent(
+      userId,
+      () => _chatService.getUnreadMessageCount(userId),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentUserEmail();
+  }
+
+  Future<void> _loadCurrentUserEmail() async {
+    final userData = await userService.value.getUserData();
+    setState(() {
+      _currentUserEmail = userData['email'];
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchChatController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Chat', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600)),
-      ),
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.r),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.chat_bubble_outline, size: 52.sp, color: Theme.of(context).colorScheme.primary),
-              SizedBox(height: 16.h),
-              Text(
-                'Chat support is ready',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
+      appBar: AppBar(title: const Text('Chats')),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(height: 20.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 23.w),
+              child: TextField(
+                controller: _searchChatController,
+                textInputAction: TextInputAction.search,
+                onChanged: (value) =>
+                    setState(() => _searchText = value.trim()),
+                decoration: InputDecoration(
+                  hintText: 'Search chat...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchChatController.text.isNotEmpty
+                      ? IconButton(
+                          tooltip: 'Clear',
+                          icon: const Icon(Icons.cancel),
+                          onPressed: () {
+                            setState(() {
+                              _searchChatController.clear();
+                              _searchText = '';
+                            });
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
-              SizedBox(height: 8.h),
-              Text(
-                'Use this screen for customer chat or messaging features.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13.sp, color: Colors.grey),
-              ),
-            ],
-          ),
+            ),
+            SizedBox(height: 10.h),
+            StreamBuilder<List<Map<String, dynamic>>>(
+              stream: _chatService.getUsersStream(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    height: ScreenUtil().screenHeight * 0.6,
+                    padding: EdgeInsets.all(16.sp),
+                    child: const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    ),
+                  );
+                }
+                if (snapshot.hasError) {
+                  return Container(
+                    height: ScreenUtil().screenHeight * 0.6,
+                    padding: EdgeInsets.all(16.sp),
+                    child: Center(
+                      child: CustomText(
+                        text: 'Error loading users',
+                        fontSize: 16.sp,
+                      ),
+                    ),
+                  );
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Container(
+                    height: ScreenUtil().screenHeight * 0.6,
+                    padding: EdgeInsets.all(16.sp),
+                    child: Center(
+                      child: CustomText(
+                        text: 'No users found',
+                        fontSize: 16.sp,
+                      ),
+                    ),
+                  );
+                }
+
+                final query = _searchText.toLowerCase();
+                final users = snapshot.data!.where((user) {
+                  final name = [
+                    user['firstName'] ?? '',
+                    user['lastName'] ?? '',
+                  ].join(' ').toLowerCase();
+                  final email = (user['email'] ?? '').toString().toLowerCase();
+                  return name.contains(query) || email.contains(query);
+                }).toList();
+
+                if (users.isEmpty) {
+                  return Container(
+                    height: ScreenUtil().screenHeight * 0.6,
+                    padding: EdgeInsets.all(16.sp),
+                    child: Center(
+                      child: CustomText(
+                        text: 'No users match your search',
+                        fontSize: 16.sp,
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: users.length,
+                  itemBuilder: (context, index) {
+                    final user = users[index];
+                    final userId = (user['uid'] ?? '').toString();
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatDetailScreen(
+                              currentUserEmail: _currentUserEmail ?? '',
+                              tappedUser: user,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        child: ListTile(
+                          leading: StreamBuilder<int>(
+                            stream: _unreadCountStream(userId),
+                            builder: (context, unreadSnapshot) {
+                              final hasUnread = (unreadSnapshot.data ?? 0) > 0;
+                              return Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  CircleAvatar(
+                                    child: CustomText(
+                                      text:
+                                          (user['firstName'] ?? '')
+                                              .toString()
+                                              .isNotEmpty
+                                          ? user['firstName'][0].toUpperCase()
+                                          : '?',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  if (hasUnread)
+                                    Positioned(
+                                      top: -2,
+                                      right: -2,
+                                      child: Container(
+                                        width: 12,
+                                        height: 12,
+                                        decoration: BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Theme.of(context).cardColor,
+                                            width: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
+                          title: CustomText(
+                            text: user['firstName'] ?? 'Unknown',
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          subtitle: CustomText(
+                            text: user['email'] ?? 'No email',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

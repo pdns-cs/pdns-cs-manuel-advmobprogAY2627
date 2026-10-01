@@ -11,20 +11,10 @@ import '../constants.dart';
 ValueNotifier<UserService> userService = ValueNotifier(UserService());
 
 class UserService {
-  static const String _localUsername = 'pdenese';
-  static const String _localPassword = 'Testing2026!';
-
   Future<Map<String, dynamic>> loginUser(
     String username,
     String password,
   ) async {
-    if (username == _localUsername && password == _localPassword) {
-      final userData = _localUserData();
-      await saveUserData(userData);
-      await saveLoginType('dummyjson');
-      return userData;
-    }
-
     final response = await http.post(
       Uri.parse('$host/auth/login'),
       headers: {'Content-Type': 'application/json'},
@@ -181,10 +171,14 @@ class UserService {
       'email': email,
     };
 
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .set(profile);
+    final firestore = FirebaseFirestore.instance;
+    final batch = firestore.batch();
+    batch.set(firestore.collection('users').doc(user.uid), profile);
+    batch.set(
+      firestore.collection('chat_users').doc(user.uid),
+      _chatDirectoryProfile(profile),
+    );
+    await batch.commit();
     await saveLoginType('firebase');
 
     final userData = {
@@ -231,9 +225,31 @@ class UserService {
       'refreshToken': '',
       'token': '',
     };
+    await _saveChatDirectoryProfile(user.uid, userData);
     await saveLoginType('firebase');
     await saveUserData(userData);
     return userData;
+  }
+
+  Future<void> _saveChatDirectoryProfile(
+    String uid,
+    Map<String, dynamic> userData,
+  ) async {
+    await FirebaseFirestore.instance
+        .collection('chat_users')
+        .doc(uid)
+        .set(_chatDirectoryProfile(userData));
+  }
+
+  Map<String, dynamic> _chatDirectoryProfile(
+    Map<String, dynamic> userData,
+  ) {
+    return {
+      'firstName': (userData['firstName'] ?? '').toString(),
+      'lastName': (userData['lastName'] ?? '').toString(),
+      'username': (userData['username'] ?? '').toString(),
+      'email': (userData['email'] ?? '').toString(),
+    };
   }
 
   Future<String?> getFirebaseIdToken({bool forceRefresh = false}) async {
@@ -305,18 +321,4 @@ class UserService {
     await currentUser!.updatePassword(newPassword);
   }
 
-  Map<String, dynamic> _localUserData() {
-    return {
-      'id': 1,
-      'username': _localUsername,
-      'email': 'pdenese@example.com',
-      'firstName': 'P',
-      'lastName': 'Denese',
-      'gender': '',
-      'image': '',
-      'accessToken': 'local-access-token',
-      'refreshToken': 'local-refresh-token',
-      'token': 'local-access-token',
-    };
-  }
 }

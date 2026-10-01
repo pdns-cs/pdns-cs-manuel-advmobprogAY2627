@@ -73,3 +73,14 @@ DummyJSON is useful for demonstrating API requests, JSON decoding, token persist
 - Firestore provides a persistent profile store linked to the Auth `uid`, so user-specific data such as the username and contact number can be retrieved consistently across devices.
 - Firebase scales with the application and can later support additional providers, security rules, password reset, email verification, and other production authentication features.
 - The current service-layer design keeps the UI independent from the provider implementation, making it possible to keep DummyJSON for laboratory API demonstrations while using Firebase for real application accounts.
+
+## Lab Activity 6: discussion
+
+When a Firebase user signs up, their information is stored in two collections:
+
+- `users/{uid}` stores the complete profile: name, age, contact number, username, and email.
+- `chat_users/{uid}` stores the chat profile: name, username, and email. This collection is used to show users in the chat list.
+
+When two users start chatting, the app sorts their UIDs to create one room ID, such as `chat_rooms/uidA_uidB`. Their messages are saved in `chat_rooms/{roomId}/messages`. Each message includes the sender ID, receiver ID, email, message text, timestamp, and status. The status changes from `sending` to `delivered`, then to `seen` when the receiver opens the chat.
+
+The app does not show the current user in the chat list, so a user cannot normally chat with themself. If a self-chat is forced, the room ID becomes `chat_rooms/{uid}_{uid}`. The message is sent and can be marked as seen immediately because the sender and receiver are the same user.

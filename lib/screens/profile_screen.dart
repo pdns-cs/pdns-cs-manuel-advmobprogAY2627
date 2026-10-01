@@ -132,9 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 TextField(
                   controller: newPasswordController,
                   obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'New password',
-                  ),
+                  decoration: const InputDecoration(labelText: 'New password'),
                 ),
               ],
             ),
@@ -221,9 +219,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       Navigator.pushNamedAndRemoveUntil(context, '/signin', (route) => false);
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Delete account failed: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Delete account failed: $error')));
     }
   }
 
@@ -233,6 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 16.h),
       child: Column(
@@ -241,7 +240,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 22.h),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(24.r),
               boxShadow: [
                 BoxShadow(
@@ -263,14 +262,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   text: _fullName(),
                   fontSize: 22.sp,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1D2238),
+                  color: colorScheme.onSurface,
                 ),
                 SizedBox(height: 6.h),
                 CustomText(
                   text: '@${(_userData['username'] ?? 'user').toString()}',
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xFF6F7592),
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ],
             ),
@@ -279,7 +278,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(22.r),
               boxShadow: [
                 BoxShadow(
@@ -293,14 +292,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 _infoRow(
                   icon: Icons.mail_outline_rounded,
-                  iconColor: const Color(0xFF5B7AE5),
+                  iconColor: colorScheme.primary,
                   label: 'Email',
                   value: _userEmail(),
                 ),
                 _divider(),
                 _infoRow(
                   icon: Icons.verified_user_outlined,
-                  iconColor: const Color(0xFF43B3AE),
+                  iconColor: colorScheme.secondary,
                   label: 'Login Type',
                   value: _usesFirebase ? 'Firebase' : 'DummyJSON',
                 ),
@@ -308,21 +307,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _divider(),
                   _infoRow(
                     icon: Icons.cake_outlined,
-                    iconColor: const Color(0xFFE5A64D),
+                    iconColor: colorScheme.tertiary,
                     label: 'Age',
                     value: (_userData['age'] ?? 'Not provided').toString(),
                   ),
                   _divider(),
                   _infoRow(
                     icon: Icons.phone_outlined,
-                    iconColor: const Color(0xFF43B3AE),
+                    iconColor: colorScheme.secondary,
                     label: 'Contact Number',
-                    value: (_userData['contactNo'] ?? 'Not provided').toString(),
+                    value: (_userData['contactNo'] ?? 'Not provided')
+                        .toString(),
                   ),
                   _divider(),
                   _infoRow(
                     icon: Icons.badge_outlined,
-                    iconColor: const Color(0xFF5B7AE5),
+                    iconColor: colorScheme.primary,
                     label: 'Firebase UID',
                     value: (_userData['uid'] ?? '').toString(),
                   ),
@@ -330,14 +330,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _divider(),
                   _infoRow(
                     icon: Icons.person_outline_rounded,
-                    iconColor: const Color(0xFFE5A64D),
+                    iconColor: colorScheme.tertiary,
                     label: 'Gender',
                     value: (_userData['gender'] ?? 'Not provided').toString(),
                   ),
                   _divider(),
                   _infoRow(
                     icon: Icons.badge_outlined,
-                    iconColor: const Color(0xFF43B3AE),
+                    iconColor: colorScheme.secondary,
                     label: 'User ID',
                     value: '#${(_userData['id'] ?? 0).toString()}',
                   ),
@@ -345,7 +345,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _divider(),
                     _infoRow(
                       icon: Icons.cake_outlined,
-                      iconColor: const Color(0xFFE5A64D),
+                      iconColor: colorScheme.tertiary,
                       label: 'Age',
                       value: _userData['age'].toString(),
                     ),
@@ -354,7 +354,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _divider(),
                     _infoRow(
                       icon: Icons.phone_outlined,
-                      iconColor: const Color(0xFF43B3AE),
+                      iconColor: colorScheme.secondary,
                       label: 'Contact Number',
                       value: _userData['contactNo'].toString(),
                     ),
@@ -369,7 +369,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _actionButton(
                 label: 'Update Username',
                 icon: Icons.edit_note_rounded,
-                color: const Color(0xFF4F7DF9),
+                color: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 onPressed: _updateUsername,
               ),
               if (_usesFirebase) ...[
@@ -377,14 +378,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _actionButton(
                   label: 'Change Password',
                   icon: Icons.lock_reset_rounded,
-                  color: const Color(0xFF2AA7A0),
+                  color: colorScheme.secondary,
+                  foregroundColor: colorScheme.onSecondary,
                   onPressed: _changePassword,
                 ),
                 SizedBox(height: 12.h),
                 _actionButton(
                   label: 'Delete Account',
                   icon: Icons.delete_forever_rounded,
-                  color: const Color(0xFFDC4B4B),
+                  color: colorScheme.tertiary,
+                  foregroundColor: colorScheme.onTertiary,
                   onPressed: _deleteAccount,
                 ),
               ],
@@ -403,16 +406,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       (route) => false,
                     );
                   },
-                  icon: Icon(Icons.logout_rounded, size: 24.sp, color: Colors.white),
+                  icon: Icon(
+                    Icons.logout_rounded,
+                    size: 24.sp,
+                    color: colorScheme.onError,
+                  ),
                   label: CustomText(
                     text: 'Log Out',
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: colorScheme.onError,
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEF6B56),
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.error,
+                    foregroundColor: colorScheme.onError,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(18.r),
@@ -428,18 +435,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAvatarPattern() {
+    final colorScheme = Theme.of(context).colorScheme;
     final colors = [
-      const Color(0xFF8FE1D4),
-      const Color(0xFFE6D26F),
-      const Color(0xFFD8E2F2),
-      const Color(0xFF6DBDB8),
-      const Color(0xFFF4E7A3),
-      const Color(0xFF9ED1C1),
+      colorScheme.primary,
+      colorScheme.secondary,
+      colorScheme.tertiary,
+      colorScheme.surfaceContainerHigh,
+      colorScheme.onSurfaceVariant,
+      colorScheme.outline,
     ];
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFE7F4F2),
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(28.r),
       ),
       padding: EdgeInsets.all(18.w),
@@ -468,6 +476,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String label,
     required IconData icon,
     required Color color,
+    required Color foregroundColor,
     required Future<void> Function() onPressed,
   }) {
     return SizedBox(
@@ -475,16 +484,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       height: 52.h,
       child: ElevatedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, size: 20.sp, color: Colors.white),
+        icon: Icon(icon, size: 20.sp, color: foregroundColor),
         label: CustomText(
           text: label,
           fontSize: 16.sp,
           fontWeight: FontWeight.w600,
-          color: Colors.white,
+          color: foregroundColor,
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
-          foregroundColor: Colors.white,
+          foregroundColor: foregroundColor,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.r),
@@ -498,7 +507,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Divider(
       height: 1,
       thickness: 1,
-      color: const Color(0xFFE8EAF1),
+      color: Theme.of(context).colorScheme.outlineVariant,
       indent: 16.w,
       endIndent: 16.w,
     );
@@ -534,7 +543,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     text: label,
                     fontSize: 17.sp,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1D2238),
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 SizedBox(width: 10.w),
@@ -545,7 +554,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       text: value,
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF6F7592),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

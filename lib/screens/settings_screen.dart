@@ -84,12 +84,15 @@ class SettingsScreen extends StatelessWidget {
                   horizontal: 16.w,
                   vertical: 4.h,
                 ),
-                leading: const Icon(Icons.logout_rounded, color: Colors.red),
+                leading: Icon(
+                  Icons.logout_rounded,
+                  color: Theme.of(context).colorScheme.error,
+                ),
                 title: CustomText(
                   text: 'Sign Out',
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w600,
-                  color: Colors.red,
+                  color: Theme.of(context).colorScheme.error,
                 ),
                 onTap: () => _logout(context),
               ),

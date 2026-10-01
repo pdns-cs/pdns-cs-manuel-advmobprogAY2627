@@ -108,8 +108,9 @@ class _SignupScreenState extends State<SignupScreen> {
       return 'Password must be at least 8 characters';
     }
 
-    if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$')
-        .hasMatch(value)) {
+    if (!RegExp(
+      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$',
+    ).hasMatch(value)) {
       return 'Password must include uppercase, lowercase, number, and special character';
     }
 
@@ -145,13 +146,14 @@ class _SignupScreenState extends State<SignupScreen> {
       Navigator.pushReplacementNamed(context, '/splash');
     } catch (error) {
       if (!mounted) return;
-      final message = error is FirebaseAuthException &&
+      final message =
+          error is FirebaseAuthException &&
               error.toString().contains('CONFIGURATION_NOT_FOUND')
           ? 'Firebase Authentication is not configured for this app. Enable Email/Password sign-in in the Firebase Console.'
           : 'Sign up failed: ${error.toString()}';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -162,11 +164,7 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F3F5),
-      appBar: AppBar(
-        title: const Text('Create Account'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Create Account'), centerTitle: true),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -182,7 +180,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       text: 'Sign Up',
                       fontSize: 28.sp,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF1D2238),
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     SizedBox(height: 24.h),
                     Row(
@@ -261,20 +259,20 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: Theme.of(context).colorScheme.surface,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFE2E2E8),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF1F2D6D),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
                             width: 1.5,
                           ),
                         ),
@@ -290,21 +288,25 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _signup,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1F2D6D),
-                          foregroundColor: Colors.white,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           elevation: 0,
                         ),
                         child: _isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 22,
                                 height: 22,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
+                                    Theme.of(context).colorScheme.onPrimary,
                                   ),
                                 ),
                               )
@@ -312,21 +314,19 @@ class _SignupScreenState extends State<SignupScreen> {
                                 text: 'Create Account',
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onPrimary,
                               ),
                       ),
                     ),
                     SizedBox(height: 18.h),
                     TextButton(
-                      onPressed: () => Navigator.pushReplacementNamed(
-                        context,
-                        '/signin',
-                      ),
+                      onPressed: () =>
+                          Navigator.pushReplacementNamed(context, '/signin'),
                       child: CustomText(
                         text: 'Already have an account? Log in',
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2D6D),
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   ],
@@ -354,27 +354,22 @@ class _SignupScreenState extends State<SignupScreen> {
         labelText: label,
         prefixIcon: Icon(icon),
         filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-        ),
+        fillColor: Theme.of(context).colorScheme.surface,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(
-            color: Color(0xFFE2E2E8),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(
-            color: Color(0xFF1F2D6D),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
             width: 1.5,
           ),
         ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 16.h,
-        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       ),
     );
   }

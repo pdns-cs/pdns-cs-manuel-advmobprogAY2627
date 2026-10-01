@@ -80,7 +80,11 @@ class ProductDetailScreen extends StatelessWidget {
                   SizedBox(height: 8.h),
                   Row(
                     children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 18),
+                      Icon(
+                        Icons.star,
+                        color: Theme.of(context).colorScheme.tertiary,
+                        size: 18,
+                      ),
                       SizedBox(width: 4.w),
                       CustomText(
                         text: '${product.rating} • ${product.stock} in stock',

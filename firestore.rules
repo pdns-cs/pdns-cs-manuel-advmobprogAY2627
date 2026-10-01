@@ -34,5 +34,76 @@ service cloud.firestore {
       allow read, delete: if isOwner();
       allow create, update: if isOwner() && hasValidProfile();
     }
+
+    match /chat_users/{userId} {
+      function isOwner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function hasValidChatProfile() {
+        let profile = request.resource.data;
+        return profile.keys().hasAll([
+                 'firstName', 'lastName', 'username', 'email'
+               ])
+            && profile.keys().hasOnly([
+                 'firstName', 'lastName', 'username', 'email'
+               ])
+            && profile.firstName is string
+            && profile.lastName is string
+            && profile.username is string
+            && profile.email is string
+            && profile.email.size() > 0;
+      }
+
+      allow read: if request.auth != null;
+      allow create, update: if isOwner() && hasValidChatProfile();
+      allow delete: if isOwner();
+    }
+
+    match /chat_rooms/{chatRoomId}/messages/{messageId} {
+      function isRoomParticipant() {
+        return request.auth != null
+            && (chatRoomId.matches('^' + request.auth.uid + '_.*$')
+                || chatRoomId.matches('^.*_' + request.auth.uid + '$'));
+      }
+
+      function isValidNewMessage() {
+        let message = request.resource.data;
+        return message.keys().hasAll([
+                 'senderId', 'senderEmail', 'receiverId', 'message', 'timestamp', 'status'
+               ])
+            && message.keys().hasOnly([
+                 'senderId', 'senderEmail', 'receiverId', 'message', 'timestamp', 'status'
+               ])
+            && message.senderId is string
+            && message.receiverId is string
+            && message.senderEmail is string
+            && message.message is string
+            && message.message.size() > 0
+            && message.timestamp is timestamp
+            && message.status == 'sending'
+            && (chatRoomId == message.senderId + '_' + message.receiverId
+                || chatRoomId == message.receiverId + '_' + message.senderId);
+      }
+
+      allow read: if isRoomParticipant();
+      allow create: if isRoomParticipant()
+          && request.auth.uid == request.resource.data.senderId
+          && isValidNewMessage();
+      allow update: if isRoomParticipant()
+          && request.auth.uid == resource.data.senderId
+          && resource.data.status == 'sending'
+          && request.resource.data.status == 'delivered'
+          && request.resource.data.deliveredAt is timestamp
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'deliveredAt'])
+          || isRoomParticipant()
+          && request.auth.uid == resource.data.receiverId
+          && resource.data.status == 'delivered'
+          && request.resource.data.status == 'seen'
+          && request.resource.data.seenAt is timestamp
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'seenAt']);
+    }
   }
 }

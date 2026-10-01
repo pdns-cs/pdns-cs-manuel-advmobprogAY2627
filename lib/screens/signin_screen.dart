@@ -71,7 +71,6 @@ class _SigninScreenState extends State<SigninScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F3F5),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -90,7 +89,7 @@ class _SigninScreenState extends State<SigninScreen> {
                           width: 42.w,
                           height: 42.w,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: ClipRRect(
@@ -107,7 +106,7 @@ class _SigninScreenState extends State<SigninScreen> {
                             text: 'Welcome',
                             fontSize: 27.sp,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1D2238),
+                            color: Theme.of(context).colorScheme.onSurface,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -145,23 +144,23 @@ class _SigninScreenState extends State<SigninScreen> {
                             : 'Username',
                         prefixIcon: const Icon(Icons.person_outline_rounded),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: Theme.of(context).colorScheme.surface,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFE2E2E8),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
                           ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFE2E2E8),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF1F2D6D),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
                             width: 1.5,
                           ),
                         ),
@@ -177,8 +176,9 @@ class _SigninScreenState extends State<SigninScreen> {
                               : 'Username is required';
                         }
                         if (_loginType == 'firebase' &&
-                            !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-                                .hasMatch(value.trim())) {
+                            !RegExp(
+                              r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                            ).hasMatch(value.trim())) {
                           return 'Enter a valid email address';
                         }
                         return null;
@@ -205,23 +205,23 @@ class _SigninScreenState extends State<SigninScreen> {
                           ),
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: Theme.of(context).colorScheme.surface,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFE2E2E8),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
                           ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFE2E2E8),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF1F2D6D),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
                             width: 1.5,
                           ),
                         ),
@@ -243,21 +243,25 @@ class _SigninScreenState extends State<SigninScreen> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _login,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1F2D6D),
-                          foregroundColor: Colors.white,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           elevation: 0,
                         ),
                         child: _isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 22,
                                 height: 22,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
+                                    Theme.of(context).colorScheme.onPrimary,
                                   ),
                                 ),
                               )
@@ -265,7 +269,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                 text: 'Log In',
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onPrimary,
                               ),
                       ),
                     ),
@@ -276,7 +280,7 @@ class _SigninScreenState extends State<SigninScreen> {
                         text: 'Create an account',
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2D6D),
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   ],
