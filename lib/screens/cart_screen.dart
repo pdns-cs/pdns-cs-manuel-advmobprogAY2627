@@ -25,6 +25,7 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   late Future<Cart?> _cartFuture;
+  Cart? _cartOverride;
 
   @override
   void initState() {
@@ -65,7 +66,7 @@ class _CartScreenState extends State<CartScreen> {
             );
           }
 
-          final cart = snapshot.data;
+          final cart = _cartOverride ?? snapshot.data;
           if (cart == null || cart.products.isEmpty) {
             return Center(
               child: CustomText(text: 'Cart is empty.', fontSize: 14.sp),
@@ -77,7 +78,7 @@ class _CartScreenState extends State<CartScreen> {
             padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 96.h),
             children: [
               // Enhancement 1: Render cart data as clickable cart item cards.
-              ...cart.products.map(_buildCartItem),
+              ...cart.products.map((product) => _buildCartItem(cart, product)),
               SizedBox(height: 16.h),
               _buildSummaryRow(
                 label: 'Subtotal:',
@@ -119,7 +120,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCartItem(CartProduct product) {
+  Widget _buildCartItem(Cart cart, CartProduct product) {
     return Card(
       elevation: 1,
       margin: EdgeInsets.only(bottom: 14.h),
@@ -176,7 +177,7 @@ class _CartScreenState extends State<CartScreen> {
               Column(
                 children: [
                   IconButton.filled(
-                    onPressed: () {},
+                    onPressed: () => _changeQuantity(cart, product, 1),
                     icon: const Icon(Icons.add),
                     style: IconButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -190,7 +191,9 @@ class _CartScreenState extends State<CartScreen> {
                     textAlign: TextAlign.center,
                   ),
                   IconButton.filled(
-                    onPressed: () {},
+                    onPressed: product.quantity > 1
+                        ? () => _changeQuantity(cart, product, -1)
+                        : null,
                     icon: const Icon(Icons.remove),
                     style: IconButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -206,6 +209,47 @@ class _CartScreenState extends State<CartScreen> {
         ),
       ),
     );
+  }
+
+  void _changeQuantity(Cart cart, CartProduct product, int change) {
+    final quantity = product.quantity + change;
+    if (quantity < 1) return;
+
+    final updatedProducts = cart.products.map((item) {
+      if (item.id != product.id) return item;
+
+      final total = item.price * quantity;
+      final discountedTotal =
+          total * (1 - item.discountPercentage / 100);
+      return CartProduct(
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        quantity: quantity,
+        total: total,
+        discountPercentage: item.discountPercentage,
+        discountedTotal: discountedTotal,
+        thumbnail: item.thumbnail,
+      );
+    }).toList();
+
+    setState(() {
+      _cartOverride = Cart(
+        id: cart.id,
+        products: updatedProducts,
+        total: updatedProducts.fold(0, (sum, item) => sum + item.total),
+        discountedTotal: updatedProducts.fold(
+          0,
+          (sum, item) => sum + item.discountedTotal,
+        ),
+        userId: cart.userId,
+        totalProducts: updatedProducts.length,
+        totalQuantity: updatedProducts.fold(
+          0,
+          (sum, item) => sum + item.quantity,
+        ),
+      );
+    });
   }
 
   Widget _buildSummaryRow({required String label, required String value}) {

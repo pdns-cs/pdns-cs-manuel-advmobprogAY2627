@@ -60,6 +60,25 @@ class ChatService {
         .snapshots();
   }
 
+  Stream<Timestamp?> getLatestMessageTimestamp(
+    String userId,
+    String otherUserId,
+  ) {
+    final ids = [userId, otherUserId]..sort();
+    return _firestore
+        .collection('chat_rooms')
+        .doc(ids.join('_'))
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .limit(1)
+        .snapshots()
+        .map((snapshot) {
+          if (snapshot.docs.isEmpty) return null;
+          final timestamp = snapshot.docs.first.data()['timestamp'];
+          return timestamp is Timestamp ? timestamp : null;
+        });
+  }
+
   Stream<int> getUnreadMessageCount(String otherUserId) {
     final currentUserId = _firebaseAuth.currentUser?.uid;
     if (currentUserId == null) return Stream<int>.value(0);

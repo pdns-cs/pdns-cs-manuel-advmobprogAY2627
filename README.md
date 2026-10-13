@@ -76,11 +76,13 @@ DummyJSON is useful for demonstrating API requests, JSON decoding, token persist
 
 ## Lab Activity 6: discussion
 
-When a Firebase user signs up, their information is stored in two collections:
+When a Firebase user signs up, their data is saved in two Firestore collections:
 
-- `users/{uid}` stores the complete profile: name, age, contact number, username, and email.
-- `chat_users/{uid}` stores the chat profile: name, username, and email. This collection is used to show users in the chat list.
+- `users/{uid}` stores the full user profile, like name, age, contact number, username, and email.
+- `chat_users/{uid}` stores the basic chat profile, like name, username, and email. This is used to show users in the chat list.
 
-When two users start chatting, the app sorts their UIDs to create one room ID, such as `chat_rooms/uidA_uidB`. Their messages are saved in `chat_rooms/{roomId}/messages`. Each message includes the sender ID, receiver ID, email, message text, timestamp, and status. The status changes from `sending` to `delivered`, then to `seen` when the receiver opens the chat.
+When a chat starts, the app gets the current user's `uid` and the selected user's `uid`. It sorts both IDs and combines them to create one chat room ID, such as `chat_rooms/uidA_uidB`. This prevents duplicate chat rooms. The messages are then stored in `chat_rooms/{roomId}/messages`.
 
-The app does not show the current user in the chat list, so a user cannot normally chat with themself. If a self-chat is forced, the room ID becomes `chat_rooms/{uid}_{uid}`. The message is sent and can be marked as seen immediately because the sender and receiver are the same user.
+Each message stores the sender ID, receiver ID, sender email, message text, timestamp, and status. The status changes from `sending` to `delivered`, then to `seen` when the receiver opens the chat.
+
+The app normally prevents chatting with yourself because the current user is removed from the chat list. If self-chat is forced, the room ID becomes `chat_rooms/{uid}_{uid}`. The message can still be saved, but the sender and receiver are the same user, so it may be marked as seen right away.
